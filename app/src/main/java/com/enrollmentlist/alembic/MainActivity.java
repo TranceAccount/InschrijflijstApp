@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
              * the redirect url as extra
              */
             if (intentData != null) {
-                String RedirectUrl = "https://alembic.utwente.nl/" + intentData.getPath();
+                String RedirectUrl = "https://alembic.utwente.nl" + intentData.getPath();
 
                 Intent intentNew = new Intent(this,MainActivity.class);
                 intentNew.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
