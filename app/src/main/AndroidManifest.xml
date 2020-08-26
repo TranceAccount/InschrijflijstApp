@@ -30,7 +30,7 @@
 
                 <data
                     android:scheme="https"
-                    android:host="alembic.utwente.nl"
+                    android:host="*alembic.utwente.nl"
                     android:pathPrefix="/inschrijflijst/" />
             </intent-filter>
         </activity>
