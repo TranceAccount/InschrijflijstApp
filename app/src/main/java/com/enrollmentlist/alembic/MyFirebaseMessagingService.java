@@ -99,9 +99,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         /*
-         * Set push notification on click action
+         * Set push notification on click action with specifier of the eventID to prevent
+         * overwriting of the event URLs
          */
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, eventID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         /*
          * Set notification parameters with BigTextStyle
@@ -120,7 +121,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentIntent(pendingIntent);
 
         /*
-         * Launch the notification with random channel integer
+         * Launch the notification with eventID to create separate notifications for each event
          */
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(eventID, notificationBuilder.build());
