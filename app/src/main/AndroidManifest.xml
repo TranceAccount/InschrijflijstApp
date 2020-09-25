@@ -28,10 +28,10 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:scheme="https"
-                    android:host="*alembic.utwente.nl"
-                    android:pathPrefix="/inschrijflijst/" />
+                <data android:scheme="https"/>
+                <data android:host="alembic.utwente.nl"/>
+                <data android:host="www.alembic.utwente.nl"/>
+                <data android:pathPrefix="/inschrijflijst/"/>
             </intent-filter>
         </activity>
 
