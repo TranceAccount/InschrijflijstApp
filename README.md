@@ -1,5 +1,5 @@
 # Inschrijflijst Alembic Application
-An Android application for the Inschrijflijst of C.T.S.G. Alembic (Enrollmentlist for events).
+An Android application written in Java for the Inschrijflijst of C.T.S.G. Alembic (Enrollmentlist for events).
 
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
     alt="Get it on Google Play"
