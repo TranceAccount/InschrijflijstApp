@@ -1,6 +1,10 @@
 # Inschrijflijst Alembic Application
 An Android application for the Inschrijflijst of C.T.S.G. Alembic (Enrollmentlist for events).
 
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png"
+    alt="Get it on Google Play"
+    height="80">](https://play.google.com/store/apps/details?id=com.enrollmentlist.alembic)
+
 Released on the Google Play Store, and will not be released on the Apple Store as they charge a yearly fee.
 
 Supports:
