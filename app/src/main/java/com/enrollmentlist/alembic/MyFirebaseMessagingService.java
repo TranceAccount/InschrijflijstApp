@@ -8,7 +8,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import androidx.core.app.NotificationCompat;
 
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +15,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import static com.enrollmentlist.alembic.MainActivity.CHANNEL_ID;
+import static com.enrollmentlist.alembic.MainActivity.BaseUrl;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -30,53 +30,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
          * The notification push action does not work when getNotification().getTitle() is used
          * when the app is in the background or killed.
          * This is due to the onMessageReceived not being triggered
-         */
-        /*
-         * Set the variables used in this class
-         */
-        String title = remoteMessage.getData().get("title");
-
-        /*
          * In case the data for title is empty but a notification is sent set default event title
          */
-        if (title == null) {
+        String title = remoteMessage.getData().get("title");
+        if (title == null)
             title = "New event available";
-        }
 
         /*
          * Get the event description
          * The notification push action does not work when getNotification().getBody() is used
          * for the same reason as for the title.
-         */
-        String body = remoteMessage.getData().get("body");
-
-        /*
          * In case the data for the description is empty set default event description
          */
-        if (body == null) {
+        String body = remoteMessage.getData().get("body");
+        if (body == null)
             body = "The event description should be here, but due to a mistake there is no description available";
-        }
 
-        /*
-         * Get the link of the event entry
-         */
-        String eventURL = remoteMessage.getData().get("eventURL");
+        String eventUrl = remoteMessage.getData().get("eventURL");
+        Integer eventID = EventIdExtractor(eventUrl);
 
-        /*
-         * Get the eventID
-         */
-        Integer eventID = EventIdExtractor(eventURL);
-
-        /*
-         * Make the notification and notify the app users
-         */
-        sendNotification(title, body, eventURL, eventID);
+        sendNotification(title, body, eventUrl, eventID);
     }
 
     /*
      * Make the notification
      */
-    private void sendNotification(String title, String body, String url, Integer eventID) {
+    private void sendNotification(String title, String body, String Url, Integer eventID) {
 
         /*
          * Create notification channel for higher versions of Android
@@ -92,9 +71,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         /*
          * Check if there is a link available and add this as extra data of the intent
+         * Clean up link if notification creator uses the www.alembic.utwente.nl/inschrijflijst/
          */
-        if (url != null) {
-            intent.putExtra("URL", url);
+        if (Url != null) {
+            if (Url.contains(BaseUrl))
+                intent.putExtra("URL", Url);
+            else if (eventID != -1)
+                intent.putExtra("URL", BaseUrl + "events/" + eventID);
+            else {
+                intent.putExtra("URL", BaseUrl + "events/");
+                eventID = (int) (Math.random() * 1000);
+            }
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
@@ -130,7 +117,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /*
      * For extraction of the event ID
      * e.g. for https://alembic.utwente.nl/inschrijflijst/events/145 it should extract 145
-     *
      * This is needed for notification IDs
      */
     private Integer EventIdExtractor(String eventURL) {
@@ -142,21 +128,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         /*
          * Check if regex found digit sequence in the eventURL
+         * Return eventId integer value after conversion of the string value and return the
+         * first value
+         * Maximum value that can be reached is 2 billion (Ask google for max integer value)
+         * In the special case that either no link is supplied or the link can not be found
+         * return -1, which is handled later on to random variable after fixing the URL to default.
          */
-        if (matcher.find()) {
-            /*
-             * Return eventId integer value after conversion of the string value and return the
-             * first value
-             * Maximum value that can be reached is 2 billion (Ask google for max integer value)
-             */
+        if (matcher.find())
             return Integer.parseInt(matcher.group(1));
-        }
-        else {
-            /*
-             * In the special case that either no link is supplied or the link can not be found
-             * return random integer
-             */
-            return new Random().nextInt();
-        }
+        else
+            return -1;
     }
 }
