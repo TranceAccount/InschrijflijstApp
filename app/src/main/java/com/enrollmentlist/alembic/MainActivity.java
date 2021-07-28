@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Always load Url on creation
         webView.loadUrl(Url);
+        setTextView(Url);
     }
 
     // Add back button functionality to go back to previous link
@@ -127,8 +129,10 @@ public class MainActivity extends AppCompatActivity {
                 restartActivity();
 
             // Allow loading of Url if it is in the app
-            else if (URL.contains(BaseUrl))
+            else if (URL.contains(BaseUrl)) {
                 webView.loadUrl(URL);
+                setTextView(URL);
+            }
 
             // Make user use different app for urls not in correspondence with BaseUrl
             else
@@ -148,5 +152,10 @@ public class MainActivity extends AppCompatActivity {
         // Start main activity
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    private void setTextView(String URL) {
+        TextView textView = findViewById(R.id.textView1);
+        textView.setText(URL);
     }
 }
