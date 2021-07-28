@@ -1,16 +1,14 @@
 package com.enrollmentlist.alembic;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.KeyEvent;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         // Check if intent is received for deep link or notification
         String appLinkAction = getIntent().getAction();
         Bundle extras = getIntent().getExtras();
-        String CurrentUrl = webView.getUrl();
+        String currentUrl = webView.getUrl();
         if (Intent.ACTION_VIEW.equals(appLinkAction)) {
             // Get redirect url
             Uri intentData = getIntent().getData();
@@ -53,9 +51,9 @@ public class MainActivity extends AppCompatActivity {
              * the redirect url as extra
              */
             if (intentData != null) {
-                String RedirectUrl = "https://alembic.utwente.nl" + intentData.getPath();
-                if (!RedirectUrl.equals(BaseUrl) && !RedirectUrl.equals(DefaultUrl) && !RedirectUrl.equals(CurrentUrl)) {
-                    Url = RedirectUrl;
+                String redirectUrl = "https://alembic.utwente.nl" + intentData.getPath();
+                if (!redirectUrl.equals(BaseUrl) && !redirectUrl.equals(DefaultUrl) && !redirectUrl.equals(currentUrl)) {
+                    Url = redirectUrl;
                     UrlLoaded = true;
                 }
             }
@@ -65,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 String NotificationUrl = extras.getString("URL");
 
                 // If no redirect url is open, overwrite with notification url (Latest call)
-                if (!NotificationUrl.equals(BaseUrl) && !NotificationUrl.equals(DefaultUrl) && !NotificationUrl.equals(CurrentUrl)) {
+                if (!NotificationUrl.equals(BaseUrl) && !NotificationUrl.equals(DefaultUrl) && !NotificationUrl.equals(currentUrl)) {
                     Url = NotificationUrl;
                     UrlLoaded = true;
                 }
@@ -73,7 +71,32 @@ public class MainActivity extends AppCompatActivity {
         }
         // Always load Url on creation
         webView.loadUrl(Url);
-        setTextView(Url);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        WebView webView = findViewById(R.id.webView1);
+        // Check if intent is received for deep link or notification
+        String appLinkAction = intent.getAction();
+        String currentUrl = webView.getUrl();
+        if (Intent.ACTION_VIEW.equals(appLinkAction)) {
+            // Get redirect url
+            Uri intentData = intent.getData();
+            /*
+             * If redirect url is available, create a new intent and start this intent containing
+             * the redirect url as extra
+             */
+            if (intentData != null) {
+                String redirectUrl = "https://alembic.utwente.nl" + intentData.getPath();
+                if (!redirectUrl.equals(BaseUrl) && !redirectUrl.equals(DefaultUrl) && !redirectUrl.equals(currentUrl)) {
+                    Url = redirectUrl;
+                    UrlLoaded = true;
+                }
+            }
+        }
+        webView.loadUrl(Url);
     }
 
     // Add back button functionality to go back to previous link
@@ -81,34 +104,46 @@ public class MainActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // In case user uses back button
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-                // Get webView instance
-                WebView webView = findViewById(R.id.webView1);
+            // Get webView instance
+            WebView webView = findViewById(R.id.webView1);
+            String currentUrl = webView.getUrl();
+            // In case user is in login screen close app
+            String loginUrl = "https://alembic.utwente.nl/inschrijflijst/login/";
+            if (currentUrl.contains(loginUrl)) {
+                onBackPressed();
+                return true;
+            }
 
-                // In case user is in login screen close app
-                if (webView.getUrl().contains("https://alembic.utwente.nl/inschrijflijst/login/")) {
-                    onBackPressed();
-                    return true;
-                }
-
-                // While user is in the notification Url go back to DefaultUrl
-                else if (!(webView.getUrl().equals(DefaultUrl)) && !webView.canGoBack()) {
-                    restartActivity();
-                    return true;
-                }
-
-                // When user is not on the defaultUrl and can go back, allow going back to previous Url
-                else if (webView.canGoBack() && !(webView.getUrl().equals(DefaultUrl))) {
-                    webView.goBack();
-                    return true;
-                }
-
-                // In case user is on defaultUrl screen close the app
+            // While user is in the notification Url go back to DefaultUrl
+            else if (!(currentUrl.equals(DefaultUrl)) && !webView.canGoBack()) {
+                if (!UrlLoaded)
+                    webView.loadUrl(DefaultUrl);
                 else
-                    return super.onKeyDown(keyCode,event);
+                    restartActivity();
+                return true;
+            }
+
+            // When user is not on the defaultUrl and can go back, allow going back to previous Url
+            else if (webView.canGoBack() && !(currentUrl.equals(DefaultUrl))) {
+                WebBackForwardList webBackForwardList = webView.copyBackForwardList();
+                String previousUrl = "";
+                if (webBackForwardList.getCurrentIndex() > 0)
+                    previousUrl = webBackForwardList.getItemAtIndex(webBackForwardList.getCurrentIndex()-1).getUrl();
+                    if (previousUrl.contains(loginUrl) || (currentUrl.equals(Url) && UrlLoaded))
+                        restartActivity();
+                    else
+                        webView.goBack();
+                return true;
+            }
+
+            // In case user is on defaultUrl screen close the app
+            else
+                onBackPressed();
+            return true;
         }
 
         // In case of any other button, do default action
-        return true;
+        return super.onKeyDown(keyCode,event);
     }
 
     /*
@@ -131,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
             // Allow loading of Url if it is in the app
             else if (URL.contains(BaseUrl)) {
                 webView.loadUrl(URL);
-                setTextView(URL);
             }
 
             // Make user use different app for urls not in correspondence with BaseUrl
@@ -152,10 +186,5 @@ public class MainActivity extends AppCompatActivity {
         // Start main activity
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
-    }
-
-    private void setTextView(String URL) {
-        TextView textView = findViewById(R.id.textView1);
-        textView.setText(URL);
     }
 }
